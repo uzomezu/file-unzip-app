@@ -5,6 +5,8 @@ const nodeStreamZip = require('node-stream-zip');
 const path = require('path');
 const fs = require('fs');
 const { resolve } = require('path');
+const { async } = require('node-stream-zip');
+const { Console } = require('console');
 
 // Multer Storage
 const storage = multer.diskStorage({
@@ -29,46 +31,76 @@ router.post('/', upload.single('zip-file'), (req,res)=>{
 
     zip.on('ready', ()=>{
         console.log("Entries Count: ", zip.entriesCount)
-        // console.log("Entries: ", zip.entries());
+        if(zip.entriesCount){
+            
+            zip.extract(null, './temp', (err, count) => {
+                console.log(err ? 'Extract error' : `Extracted ${count} entries`);
+                zip.close();
+                if (err) {
+                    res.sendStatus(400, err)
+                } else {
+                    res.send({message : "Multiple Files Extracted", "files" : zip.entries})
+                }
+            });
+
+            
+        }
     });
 
-    zip.on("entry", (entry)=>{
-        let pathname = path.resolve('./temp', entry.name);
-        // From Stack Overflow
-        if (/\.\./.test(path.relative('./temp', pathname))) {
-            console.warn("[zip warn]: ignoring maliciously crafted paths in zip file:", entry.name);
-            return;
-        }
-      
-        if ('/' === entry.name[entry.name.length - 1]) {
-          console.log('[DIR]', entry.name);
-          return;
-        }
-      
-        console.log('[FILE]', entry.name);
-
-        console.log("PathName: ", pathname);
-
-
-        zip.stream(entry.name, (err, stream)=>{
-            if (err) {console.error("Error!: ", err.toString()); return;}
-
-            stream.on('error', (err)=>{console.error("[ERROR] : ", err); return;})
-
-            // No errors 
-            fs.mkdir(
-                path.dirname(pathname),
-                {recursive: true},
-                function (err) {
-                    stream.pipe(fs.createWriteStream(pathname));
-                    res.send({"message" : "Success! File has been unzipped", "path" : pathname})
-                    }
-            )
-            
-        })
-        
-       
-    })
+    // if(zip.entriesCount <= 1) {
+    //     zip.on("entry", (entry)=>{
+    //         let pathname = path.resolve('./temp', entry.name);
+    //         // From Stack Overflow
+    //         if (/\.\./.test(path.relative('./temp', pathname))) {
+    //             console.warn("[zip warn]: ignoring maliciously crafted paths in zip file:", entry.name);
+    //             return;
+    //         }
+          
+    //         if ('/' === entry.name[entry.name.length - 1]) {
+    //           console.log('[DIR]', entry.name);
+    //           return;
+    //         }
+          
+    //         console.log('[FILE]', entry.name);
+    
+    //         console.log("PathName: ", pathname);
+    
+    
+    //         zip.stream(entry.name, (err, stream)=>{
+    //             if (err) {console.error("Error!: ", err.toString()); return;}
+    
+    //             stream.on('error', (err)=>{console.error("[ERROR] : ", err); return;})
+    
+    //             // No errors 
+    //             fs.mkdir(
+    //                 path.dirname(pathname),
+    //                 {recursive: true},
+    //                 function () {
+    //                     try{
+    //                         stream.pipe(fs.createWriteStream(pathname));
+    //                         stream.on("end", ()=>{
+    //                         zip.close();
+    //                     })
+    //                     } catch(err){
+    //                         throw err;
+    //                     }
+    //                     }
+    //             )   
+    //         })
+          
+         
+    //     })
+    // }
+    // let pathname = path.resolve('./temp');
+    // let files = fs.readdirSync(pathname);
+    // if(zip.entriesCount == files.length){
+    //     const data = "All Files have been unzipped!";
+    //     console.log(files.length);
+    //     return res.send({"message": data});            
+    // } else {
+    //     const errMessage = "Files Not unzipped";
+    //     return res.send({message : errMessage});
+    // }
 });
 
 router.get("/files", (req,res)=>{

@@ -32,14 +32,27 @@ router.post('/', upload.single('zip-file'), (req,res)=>{
     zip.on('ready', ()=>{
         console.log("Entries Count: ", zip.entriesCount)
         if(zip.entriesCount){
-            
+            const folder = fs.readdirSync('./temp');
+            if (folder.entriesCount != 0) {
+               for(const file of folder) {
+                let location = path.join('./temp',file);
+                console.log(location);
+                let status = fs.statSync(location);
+                if (status.isFile()){
+                    fs.rmSync(location);
+                } else if (status.isDirectory()){
+                    fs.rmdirSync(location);
+                }
+               }
+               
+            }
             zip.extract(null, './temp', (err, count) => {
                 console.log(err ? 'Extract error' : `Extracted ${count} entries`);
                 zip.close();
                 if (err) {
                     res.sendStatus(400, err)
                 } else {
-                    res.send({message : "Multiple Files Extracted", "files" : zip.entries})
+                    res.send({message : "Multiple Files Extracted", "file_amt" : zip.entriesCount })
                 }
             });
 

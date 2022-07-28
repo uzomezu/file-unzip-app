@@ -6,7 +6,7 @@ const path = require('path');
 const fs = require('fs');
 const { resolve } = require('path');
 const { async } = require('node-stream-zip');
-const { Console } = require('console');
+const { Console,log,error } = require('console');
 
 // Multer Storage
 const storage = multer.diskStorage({
@@ -43,8 +43,7 @@ router.post('/', upload.single('zip-file'), (req,res)=>{
                 } else if (status.isDirectory()){
                     fs.rmdirSync(location);
                 }
-               }
-               
+               } 
             }
             zip.extract(null, './temp', (err, count) => {
                 console.log(err ? 'Extract error' : `Extracted ${count} entries`);
@@ -52,11 +51,15 @@ router.post('/', upload.single('zip-file'), (req,res)=>{
                 if (err) {
                     res.sendStatus(400, err)
                 } else {
-                    res.send({message : "Multiple Files Extracted", "file_amt" : zip.entriesCount })
+                  const pathToDwnLd = path.resolve('./temp');
+                  let array = new BigInt64Array(0);
+                  let buffer = Buffer.from(array.buffer);
+
+                  fs.createWriteStream(pathToDwnLd).write(buffer);
+
+                  res.json({message : "Successful Unzip of files!", unzip : buffer});
                 }
             });
-
-            
         }
     });
 

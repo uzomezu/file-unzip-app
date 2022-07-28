@@ -16,13 +16,7 @@ if (!fs.existsSync(path.join(__dirname, '/uploads'))){
 }
 
 app.use("/api/unzip", unZipRoutes);
-app.get("*", (req,res)=>{
-    fs.readFile('./index.html', 'utf8', (err,data)=>{
-        if(err) throw err;
-        res.writeHead(200, 'text/html');
-        res.end(data);
-    })
-})
+app.use('/', express.static(path.join(__dirname, '/client')));
 
 const port = process.env.PORT || 8000;
 

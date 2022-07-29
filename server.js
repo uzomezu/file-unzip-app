@@ -16,7 +16,7 @@ if (!fs.existsSync(path.join(__dirname, '/uploads'))){
 }
 
 app.use("/api/unzip", unZipRoutes);
-app.use('/', express.static(path.join(__dirname, '/client')));
+app.use('/client', express.static(path.join(__dirname, '/client')));
 
 const port = process.env.PORT || 8000;
 

@@ -22,6 +22,9 @@ const upload = multer({storage});
 
 //
 router.post('/', upload.single('zip-file'), (req,res)=>{
+    // console.log("TESTING");
+    // console.log(req.body,req.file);
+    // res.send({message: "testing server, look at console."});
     const zip = new nodeStreamZip({
         file : req.file.path,
         storeEntries : true
@@ -38,26 +41,17 @@ router.post('/', upload.single('zip-file'), (req,res)=>{
                 let location = path.join('./temp',file);
                 console.log(location);
                 let status = fs.statSync(location);
-                if (status.isFile()){
-                    fs.rmSync(location);
-                } else if (status.isDirectory()){
-                    fs.rmdirSync(location);
-                }
+                fs.rmSync(location, {recursive: true});
                } 
             }
             zip.extract(null, './temp', (err, count) => {
-                console.log(err ? 'Extract error' : `Extracted ${count} entries`);
+                console.log(err ? 'Extraction error' : `Extracted ${count} entries`);
                 zip.close();
                 if (err) {
                     res.sendStatus(400, err)
                 } else {
                   const pathToDwnLd = path.resolve('./temp');
-                  let array = new BigInt64Array(0);
-                  let buffer = Buffer.from(array.buffer);
-
-                  fs.createWriteStream(pathToDwnLd).write(buffer);
-
-                  res.json({message : "Successful Unzip of files!", unzip : buffer});
+                  res.json({message: `Check location in temporary folder`, location : pathToDwnLd});
                 }
             });
         }

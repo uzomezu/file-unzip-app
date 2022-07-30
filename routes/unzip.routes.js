@@ -30,6 +30,7 @@ router.post('/', upload.single('zip-file'), (req,res)=>{
         storeEntries : true
     })
     // handle errors
+    
     zip.on('error', (err)=>{console.error(`Error!: ${err}`); res.send({"Error" : err})});
 
     zip.on('ready', ()=>{

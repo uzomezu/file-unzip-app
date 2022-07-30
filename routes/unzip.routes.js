@@ -51,69 +51,25 @@ router.post('/', upload.single('zip-file'), (req,res)=>{
                 if (err) {
                     res.sendStatus(400, err)
                 } else {
+                /// Attatch all of this to req.unzipped object as req = { unzipped : {{pathToDwnLd}} };
                   const pathToDwnLd = path.resolve('./temp');
                   res.json({message: `Check location in temporary folder`, location : pathToDwnLd});
                 }
             });
         }
     });
-
-    // if(zip.entriesCount <= 1) {
-    //     zip.on("entry", (entry)=>{
-    //         let pathname = path.resolve('./temp', entry.name);
-    //         // From Stack Overflow
-    //         if (/\.\./.test(path.relative('./temp', pathname))) {
-    //             console.warn("[zip warn]: ignoring maliciously crafted paths in zip file:", entry.name);
-    //             return;
-    //         }
-          
-    //         if ('/' === entry.name[entry.name.length - 1]) {
-    //           console.log('[DIR]', entry.name);
-    //           return;
-    //         }
-          
-    //         console.log('[FILE]', entry.name);
-    
-    //         console.log("PathName: ", pathname);
-    
-    
-    //         zip.stream(entry.name, (err, stream)=>{
-    //             if (err) {console.error("Error!: ", err.toString()); return;}
-    
-    //             stream.on('error', (err)=>{console.error("[ERROR] : ", err); return;})
-    
-    //             // No errors 
-    //             fs.mkdir(
-    //                 path.dirname(pathname),
-    //                 {recursive: true},
-    //                 function () {
-    //                     try{
-    //                         stream.pipe(fs.createWriteStream(pathname));
-    //                         stream.on("end", ()=>{
-    //                         zip.close();
-    //                     })
-    //                     } catch(err){
-    //                         throw err;
-    //                     }
-    //                     }
-    //             )   
-    //         })
-          
-         
-    //     })
-    // }
-    // let pathname = path.resolve('./temp');
-    // let files = fs.readdirSync(pathname);
-    // if(zip.entriesCount == files.length){
-    //     const data = "All Files have been unzipped!";
-    //     console.log(files.length);
-    //     return res.send({"message": data});            
-    // } else {
-    //     const errMessage = "Files Not unzipped";
-    //     return res.send({message : errMessage});
-    // }
 });
+router.post("/base64", upload.single('zip-file'), async (req,res)=> {
+    const testTemp = fs.readdirSync(path.join(__dirname,'/temp'));
 
+    /**
+     * idea is to recursivelly read and then store files in array
+       drawbacks : 
+       1. hard to keep original folder structure
+       2. slower that general unzip
+     */
+    
+})
 router.get("/files", (req,res)=>{
     if (fs.existsSync('./temp')){
         res.send({"message" : "Check the Temp Folder" })
